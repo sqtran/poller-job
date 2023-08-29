@@ -63,10 +63,6 @@ public class Driver {
                         if(!fileName.endsWith(".processing") && !fileName.endsWith(".done")){
                             System.out.println("file changed: " + fileName);
 
-
-
-                           // TODO create k8s job
-
                             try (OpenShiftClient client = new KubernetesClientBuilder().build().adapt(OpenShiftClient.class)) {
                                 Job job = new JobBuilder()
                                         .withNewMetadata()
