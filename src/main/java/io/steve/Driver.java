@@ -8,6 +8,9 @@ import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 
+import io.fabric8.kubernetes.api.model.EmptyDirVolumeSourceBuilder;
+import io.fabric8.kubernetes.api.model.VolumeBuilder;
+import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.api.model.batch.v1.JobBuilder;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
@@ -75,8 +78,17 @@ public class Driver {
                                                         .withName("sleep-container")
                                                         .withImage("alpine")
                                                         .withCommand("sleep", "30")
+                                                        .addNewVolumeMount()
+                                                            .withMountPath("/test")
+                                                            .withName("test-volume")
+                                                        .endVolumeMount()
                                                     .endContainer()
-                                                    .withRestartPolicy("Never")
+                                                .withVolumes()
+                                                    .addNewVolume()
+                                                        .withName("test-volume")
+                                                        .withEmptyDir(new EmptyDirVolumeSourceBuilder().build())
+                                                .endVolume()
+                                                .withRestartPolicy("Never")
                                                 .endSpec()
                                             .endTemplate()
                                         .endSpec()
