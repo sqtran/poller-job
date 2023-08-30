@@ -7,10 +7,13 @@ import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
+import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.EmptyDirVolumeSourceBuilder;
-import io.fabric8.kubernetes.api.model.VolumeBuilder;
-import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
+import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.api.model.batch.v1.JobBuilder;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
@@ -62,7 +65,6 @@ public class Driver {
                         // Returns the path (relative path) of the file or directory that triggered the event
                         Path fileName = (Path) event.context();
 
-
                         if(!fileName.endsWith(".processing") && !fileName.endsWith(".done")){
                             System.out.println("file changed: " + fileName);
 
@@ -93,6 +95,23 @@ public class Driver {
                                             .endTemplate()
                                         .endSpec()
                                         .build();
+
+                                ConfigMap cm = client.configMaps().inNamespace(client.getNamespace()).withName("test-configmap").get();
+
+                                if(cm != null) {
+                                    List<EnvVar> envs = new ArrayList<>();
+                                    for (Map.Entry<String, String> entry : cm.getData().entrySet()) {
+                                        EnvVar ev = new EnvVar();
+                                        ev.setName(entry.getKey());
+                                        ev.setValue(entry.getValue());
+                                        envs.add(ev);
+                                        System.out.println("Adding ENV : " + ev.toString());
+                                    }
+                                    job.getSpec().getTemplate().getSpec().getContainers().get(0).setEnv(envs);
+                                }
+                                else {
+                                    System.out.println("Config map not found");
+                                }
 
                                 client.batch().v1().jobs().inNamespace(client.getNamespace()).resource(job).create();
 
