@@ -1,5 +1,7 @@
 # k8s-job
 
+This is a sample project that demonstrates the use of the Fabric8 library to programatically create Kubernetes objects. Specifically, it creates a Kubernetes Job with the Fabric8 DSL.
+
 This project uses Quarkus, the Supersonic Subatomic Java Framework.
 
 If you want to learn more about Quarkus, please visit its website: https://quarkus.io/ .
@@ -62,4 +64,26 @@ You'll see an error like the following if you don't have permissions.
 
 ```text
 io.fabric8.kubernetes.client.KubernetesClientException: Failure executing: POST at: https://172.30.0.1:443/apis/batch/v1/namespaces/steve-dev/jobs. Message: Forbidden!Configured service account doesn't have access. Service account may have been revoked. jobs.batch is forbidden: User "system:serviceaccount:steve-dev:default" cannot create resource "jobs" in API group "batch" in the namespace "steve-dev".
+```
+
+You'll get similar errors reading the ConfigMaps.  Here's a sample RoleBinding snippet.
+
+```
+rules:
+  - verbs:
+      - get
+      - watch
+      - list
+      - create
+    apiGroups:
+      - batch
+    resources:
+      - jobs
+  - verbs:
+      - get
+      - list
+    apiGroups:
+      - ''
+    resources:
+      - configmaps
 ```
